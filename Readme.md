@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url]
 
 * Студент: [Алексей Рылов](https://up.htmlacademy.ru/javascript/14/user/106372).
-* Наставник: `Неизвестно`.
+* Наставник: [Кирилл Пензин](https://htmlacademy.ru/profile/id91821).
 
 ---
 
