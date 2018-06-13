@@ -1,6 +1,7 @@
 'use strict';
 
 var templateAnchor = document.querySelector('#picture').content.querySelector('.picture__link');
+var socialComments = document.querySelector('.social__comments');
 
 var exampleComments = [
   'Всё отлично!',
@@ -19,6 +20,15 @@ var exampleDescriptions = [
   'Цените каждое мгновенье. Цените тех, кто рядом с вами и отгоняйте все сомненья. Не обижайте всех словами......',
   'Вот это тачка!'
 ];
+
+/*
+* удаление первых двух элементов
+* */
+var removeChildren = function (elem, length) {
+  for (var i = 0; i < length; i++) {
+    elem.removeChild(elem.children[0]);
+  }
+};
 
 var getRandomElement = function (arr) {
   return arr[Math.round(Math.random() * (arr.length - 1))];
@@ -60,29 +70,44 @@ var renderPicture = function (picture) {
 };
 
 var renderPictures = function (allPictures) {
-  var fragment = document.createDocumentFragment();
+  var fragmentPictures = document.createDocumentFragment();
   allPictures.forEach(function (item) {
-    fragment.appendChild(renderPicture(item));
+    fragmentPictures.appendChild(renderPicture(item));
   });
-  document.querySelector('.pictures').appendChild(fragment);
+  document.querySelector('.pictures').appendChild(fragmentPictures);
+};
+
+// получаю один комментарий
+var renderComment = function (comment) {
+  var socialComment = document.querySelector('.social__comment').cloneNode(true);
+  socialComment.querySelector('.social__picture').src = 'img/avatar-' + getRandomInteger(1, 6) + '.svg';
+  socialComment.querySelector('.social__text').textContent = comment;
+  return socialComment;
+};
+
+// получаю все комментарии и вывожу
+var renderComments = function (allComments, elem) {
+  var fragmentComments = document.createDocumentFragment();
+  allComments.forEach(function (item) {
+    fragmentComments.appendChild(renderComment(item));
+  });
+  elem.appendChild(fragmentComments);
 };
 
 var renderBigPicture = function (bigPicture) {
-  var socialComments = document.querySelectorAll('.social__comment');
   document.querySelector('.big-picture__img img').src = bigPicture.url;
   document.querySelector('.likes-count').textContent = bigPicture.likes;
   document.querySelector('.comments-count').textContent = bigPicture.comments.length;
-  socialComments.forEach(function (item) {
-    item.querySelector('.social__picture').src = 'img/avatar-' + getRandomInteger(1, 6) + '.svg';
-    item.querySelector('.social__text').textContent = getRandomElement(bigPicture.comments);
-  });
   document.querySelector('.social__caption').textContent = bigPicture.description;
+  renderComments(bigPicture.comments, socialComments);
 };
 
 var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture);
 
 renderPictures(pictures);
 renderBigPicture(pictures[0]);
+
+removeChildren(socialComments, 2);
 
 document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
