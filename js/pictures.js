@@ -22,11 +22,11 @@ var exampleDescriptions = [
 ];
 
 /*
-* удаление первых двух элементов
+* удаление всех элементов
 * */
-var removeChildren = function (elem, length) {
-  for (var i = 0; i < length; i++) {
-    elem.removeChild(elem.children[0]);
+var removeChildren = function (elem) {
+  while (elem.firstChild) {
+    elem.removeChild(elem.firstChild);
   }
 };
 
@@ -79,7 +79,7 @@ var renderPictures = function (allPictures) {
 
 // получаю один комментарий
 var renderComment = function (comment) {
-  var socialComment = document.querySelector('.social__comment').cloneNode(true);
+  var socialComment = document.querySelector('.social__comments .social__comment').cloneNode(true);
   socialComment.querySelector('.social__picture').src = 'img/avatar-' + getRandomInteger(1, 6) + '.svg';
   socialComment.querySelector('.social__text').textContent = comment;
   return socialComment;
@@ -91,6 +91,9 @@ var renderComments = function (allComments, elem) {
   allComments.forEach(function (item) {
     fragmentComments.appendChild(renderComment(item));
   });
+  // сначала очищаю список ненужных элементов родителя
+  removeChildren(elem);
+  // затем вствляю нужные элементы
   elem.appendChild(fragmentComments);
 };
 
@@ -106,8 +109,6 @@ var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture)
 
 renderPictures(pictures);
 renderBigPicture(pictures[0]);
-
-removeChildren(socialComments, 2);
 
 document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
