@@ -20,26 +20,26 @@ var exampleDescriptions = [
   'Вот это тачка!'
 ];
 
-var getRandomElement = function (element) {
-  return element[Math.floor(Math.random() * (element.length - 1))];
+var getRandomElement = function (arr) {
+  return arr[Math.round(Math.random() * (arr.length - 1))];
 };
 
 var getRandomInteger = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
 };
 
+var generateArray = function (length, fnGeneration) {
+  return Array.apply(null, {length: length}).map(Function.call, fnGeneration);
+};
+
 var createRandomComment = function () {
-  return (Math.round(Math.random()) === 0) ?
-    getRandomElement(exampleComments) :
-    getRandomElement(exampleComments) + ' ' + getRandomElement(exampleComments);
+  return generateArray(1 + Math.round(Math.random()), function () {
+    return getRandomElement(exampleComments);
+  }).join(' ');
 };
 
 var generateComments = function () {
-  var comments = [];
-  for (var i = 0; i < exampleComments.length; i++) {
-    comments.push(createRandomComment());
-  }
-  return comments;
+  return generateArray(getRandomInteger(1, 7), createRandomComment);
 };
 
 var createPicture = function (num) {
@@ -82,10 +82,8 @@ var renderBigPicture = function (bigPicture) {
 var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture);
 
 renderPictures(pictures);
-
-document.querySelector('.big-picture').classList.remove('hidden');
-
 renderBigPicture(pictures[0]);
 
+document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.social__loadmore').classList.add('visually-hidden');
