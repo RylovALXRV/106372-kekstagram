@@ -108,8 +108,79 @@ var renderBigPicture = function (bigPicture) {
 var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture);
 
 renderPictures(pictures);
-renderBigPicture(pictures[0]);
+// renderBigPicture(pictures[0]);
 
-document.querySelector('.big-picture').classList.remove('hidden');
+// document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.social__loadmore').classList.add('visually-hidden');
+
+// ------------------------- Задание №15 ----------------------------------
+
+var imgUpload = document.querySelector('.img-upload');
+var imgUploadInput = imgUpload.querySelector('.img-upload__input');
+var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
+var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
+var bigPicture = document.querySelector('.big-picture');
+var picturesImg = document.querySelectorAll('.pictures .picture__img');
+var bigPictureClose = bigPicture.querySelector('.big-picture__cancel');
+
+var openImgUploadOverlay = function () {
+  imgUploadOverlay.classList.remove('hidden');
+};
+
+imgUploadCancel.addEventListener('click', function () {
+  closeImgUploadOverlay();
+});
+
+imgUploadInput.addEventListener('change', function () {
+  openImgUploadOverlay();
+});
+
+var closeImgUploadOverlay = function () {
+  imgUploadOverlay.classList.add('hidden');
+};
+
+var setClassName = function (node, cls) {
+  if (!node.classList.contains(cls)) {
+    node.className = '';
+  }
+  node.classList.add('effects__preview--' + cls);
+};
+
+imgUploadOverlay.addEventListener('click', function (evt) {
+  var target = evt.target;
+  if (target.tagName !== 'INPUT') {
+    return;
+  }
+  setClassName(document.querySelector('.img-upload__preview img'), target.value);
+}, true);
+
+var setDataId = function (arr) {
+  arr.forEach(function (item, i) {
+    item.dataset.id = i;
+  });
+};
+
+setDataId(picturesImg);
+
+var renderPictureByIndex = function (evt) {
+  var target = evt.target;
+  if (target.dataset.id) {
+    renderBigPicture(pictures[target.dataset.id]);
+  }
+  bigPicture.classList.remove('hidden');
+};
+
+picturesImg.forEach(function (item) {
+  item.addEventListener('click', function (evt) {
+    renderPictureByIndex(evt);
+  });
+});
+
+var closeBigPicture = function () {
+  bigPicture.classList.add('hidden');
+};
+
+bigPictureClose.addEventListener('click', function () {
+  closeBigPicture();
+});
