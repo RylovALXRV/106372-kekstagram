@@ -108,37 +108,79 @@ var renderBigPicture = function (bigPicture) {
 var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture);
 
 renderPictures(pictures);
-// renderBigPicture(pictures[0]);
 
-// document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.social__loadmore').classList.add('visually-hidden');
 
 // ------------------------- Задание №15 ----------------------------------
 
-var imgUpload = document.querySelector('.img-upload');
-var imgUploadInput = imgUpload.querySelector('.img-upload__input');
-var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
-var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
 var bigPicture = document.querySelector('.big-picture');
+var bigPictureCancel = bigPicture.querySelector('.big-picture__cancel');
+var imgUpload = document.querySelector('.img-upload');
+var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
+var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
+var imgUploadInput = imgUpload.querySelector('.img-upload__form .img-upload__input');
 var picturesImg = document.querySelectorAll('.pictures .picture__img');
-var bigPictureClose = bigPicture.querySelector('.big-picture__cancel');
+var ESC_CODE = 27;
+var ENTER_CODE = 13;
 
-var openImgUploadOverlay = function () {
-  imgUploadOverlay.classList.remove('hidden');
+var pressEsc = function (evt, node) {
+  if (evt.keyCode === ESC_CODE) {
+    if (evt.target.value === imgUploadInput.value) {
+      // очищаю поле input после закрытия клавишей ESC
+      imgUploadInput.value = '';
+    }
+    node.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+  }
 };
+
+var openWindowImgUpload = function () {
+  imgUploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', function (evt) {
+    pressEsc(evt, imgUploadOverlay);
+  });
+};
+
+var closeWindowImgUpload = function (field) {
+  field.value = '';
+  imgUploadOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', function (evt) {
+    pressEsc(evt, imgUploadOverlay);
+  });
+};
+
+var closeBigPicture = function () {
+  bigPicture.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', function (evt) {
+    pressEsc(evt, bigPicture);
+  });
+};
+
+imgUpload.querySelector('.img-upload__input').addEventListener('change', function () {
+  openWindowImgUpload();
+});
 
 imgUploadCancel.addEventListener('click', function () {
-  closeImgUploadOverlay();
+  closeWindowImgUpload(imgUploadInput);
 });
 
-imgUploadInput.addEventListener('change', function () {
-  openImgUploadOverlay();
+imgUploadCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_CODE) {
+    closeWindowImgUpload(imgUploadInput);
+  }
 });
 
-var closeImgUploadOverlay = function () {
-  imgUploadOverlay.classList.add('hidden');
-};
+bigPictureCancel.addEventListener('click', function () {
+  closeBigPicture();
+});
+
+bigPictureCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_CODE) {
+    closeBigPicture();
+  }
+});
 
 var setClassName = function (node, cls) {
   if (!node.classList.contains(cls)) {
@@ -153,7 +195,7 @@ imgUploadOverlay.addEventListener('click', function (evt) {
     return;
   }
   setClassName(document.querySelector('.img-upload__preview img'), target.value);
-}, true);
+});
 
 var setDataId = function (arr) {
   arr.forEach(function (item, i) {
@@ -161,26 +203,22 @@ var setDataId = function (arr) {
   });
 };
 
-setDataId(picturesImg);
-
 var renderPictureByIndex = function (evt) {
   var target = evt.target;
   if (target.dataset.id) {
     renderBigPicture(pictures[target.dataset.id]);
   }
   bigPicture.classList.remove('hidden');
+  document.body.classList.add('modal-open');
 };
+
+setDataId(picturesImg);
 
 picturesImg.forEach(function (item) {
   item.addEventListener('click', function (evt) {
     renderPictureByIndex(evt);
+    document.addEventListener('keydown', function (evtDiff) {
+      pressEsc(evtDiff, bigPicture);
+    });
   });
-});
-
-var closeBigPicture = function () {
-  bigPicture.classList.add('hidden');
-};
-
-bigPictureClose.addEventListener('click', function () {
-  closeBigPicture();
 });
