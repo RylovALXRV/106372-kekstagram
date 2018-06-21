@@ -119,41 +119,39 @@ var bigPictureCancel = bigPicture.querySelector('.big-picture__cancel');
 var imgUpload = document.querySelector('.img-upload');
 var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
 var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
-var imgUploadInput = imgUpload.querySelector('.img-upload__form .img-upload__input');
-var picturesImg = document.querySelectorAll('.pictures .picture__img');
+
 var ESC_CODE = 27;
+var ENTER_CODE = 13;
 
-var pressEsc = function (evt, node) {
-  if (evt.keyCode === ESC_CODE) {
-    if (evt.target.value === imgUploadInput.value) {
-      // очищаю поле input после закрытия клавишей ESC
-      imgUploadInput.value = '';
-    }
-    node.classList.add('hidden');
-    document.body.classList.remove('modal-open');
-  }
+var resetPropertiesUploadImg = function () {
+  document.querySelector('.img-upload__form .img-upload__input').value = '';
+  document.querySelector('.resize__control--value').value = '100%';
 };
 
-var openWindowImgUpload = function () {
-  imgUploadOverlay.classList.remove('hidden');
-  document.addEventListener('keydown', function (evt) {
-    pressEsc(evt, imgUploadOverlay);
-  });
-};
 
-var closeWindowImgUpload = function (field) {
-  field.value = '';
-  imgUploadOverlay.classList.add('hidden');
-  document.removeEventListener('keydown', function (evt) {
-    pressEsc(evt, imgUploadOverlay);
-  });
-};
-
-var closeBigPicture = function () {
-  bigPicture.classList.add('hidden');
+var closeModal = function (node) {
+  node.classList.add('hidden');
+  // про добавление этого класса пишется в задании...
   document.body.classList.remove('modal-open');
-  document.removeEventListener('keydown', function (evt) {
-    pressEsc(evt, bigPicture);
+};
+
+var openWindowImgUpload = function (node) {
+  node.classList.remove('hidden');
+  document.addEventListener('keydown', function (evt) {
+    if (evt.keyCode === ESC_CODE &&
+      !document.activeElement.classList.contains('text__hashtags') &&
+      !document.activeElement.classList.contains('text__description')) {
+      resetPropertiesUploadImg();
+      closeModal(imgUploadOverlay);
+    }
+  });
+};
+
+var closeBigPicture = function (node) {
+  node.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', function () {
+    closeModal(bigPicture);
   });
 };
 
@@ -180,15 +178,23 @@ var setDataId = function (arr) {
 };
 
 imgUpload.querySelector('.img-upload__input').addEventListener('change', function () {
-  openWindowImgUpload();
+  openWindowImgUpload(imgUploadOverlay);
 });
 
 imgUploadCancel.addEventListener('click', function () {
-  closeWindowImgUpload(imgUploadInput);
+  closeModal(imgUploadOverlay);
+  resetPropertiesUploadImg();
+});
+
+imgUploadCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_CODE) {
+    closeModal(imgUploadOverlay);
+    resetPropertiesUploadImg();
+  }
 });
 
 bigPictureCancel.addEventListener('click', function () {
-  closeBigPicture();
+  closeBigPicture(bigPicture);
 });
 
 imgUploadOverlay.addEventListener('click', function (evt) {
@@ -199,13 +205,14 @@ imgUploadOverlay.addEventListener('click', function (evt) {
   setClassName(document.querySelector('.img-upload__preview img'), target.value);
 });
 
-setDataId(picturesImg);
-
-picturesImg.forEach(function (item) {
+document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
+  setDataId(document.querySelectorAll('.pictures .picture__img'));
   item.addEventListener('click', function (evt) {
     renderPictureByIndex(evt);
     document.addEventListener('keydown', function (keydownEvt) {
-      pressEsc(keydownEvt, bigPicture);
+      if (keydownEvt.keyCode === ESC_CODE) {
+        closeModal(bigPicture);
+      }
     });
   });
 });
