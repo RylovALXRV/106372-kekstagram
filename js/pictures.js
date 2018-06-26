@@ -126,6 +126,11 @@ var ENTER_CODE = 13;
 var resetPropertiesUploadImg = function () {
   document.querySelector('.img-upload__form .img-upload__input').value = '';
   document.querySelector('.resize__control--value').value = '100%';
+  document.querySelector('.scale__pin').style.left = '';
+  document.querySelector('.scale__level').style.width = '';
+  document.querySelector('.img-upload__preview img').className = '';
+  document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
+  document.querySelector('.img-upload__preview img').style.filter = '';
 };
 
 
@@ -179,6 +184,7 @@ var setDataId = function (arr) {
 
 imgUpload.querySelector('.img-upload__input').addEventListener('change', function () {
   openWindowImgUpload(imgUploadOverlay);
+  resetPropertiesUploadImg();
 });
 
 imgUploadCancel.addEventListener('click', function () {
@@ -197,12 +203,18 @@ bigPictureCancel.addEventListener('click', function () {
   closeBigPicture(bigPicture);
 });
 
-imgUploadOverlay.addEventListener('click', function (evt) {
+document.querySelector('.effects__list').addEventListener('click', function (evt) {
   var target = evt.target;
   if (target.tagName !== 'INPUT') {
     return;
   }
+  resetPropertiesUploadImg();
   setClassName(document.querySelector('.img-upload__preview img'), target.value);
+  if (target.value === 'none') {
+    document.querySelector('.img-upload__scale').classList.add('hidden');
+  } else {
+    document.querySelector('.img-upload__scale').classList.remove('hidden');
+  }
 });
 
 document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
@@ -216,3 +228,193 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
     });
   });
 });
+
+// ------------------------ Задание №16 ------------------------------------
+
+(function () {
+
+  document.querySelector('.text__hashtags').addEventListener('input', function (evt) {
+    var target = evt.target;
+    var arrTargets = target.value.split(' ');
+    var cloneArrTargets = [];
+
+    arrTargets.forEach(function (item) {
+      var itemMaxLength = 20;
+      item = item.toLowerCase();
+      if (item.length > itemMaxLength) {
+        target.setCustomValidity('максимальная длина одного хэш-тега 20 символов, включая решётку.');
+      } else if (item.indexOf('#') !== 0) {
+        target.setCustomValidity('первым символом хеш-тега должна быть решетка');
+      } else if (item.length === 1) {
+        target.setCustomValidity('хеш-тег не может состоять только из одной решетки');
+      } else if (cloneArrTargets.indexOf(item) !== -1) {
+        target.setCustomValidity('один и тот же хэш-тег не может быть использован дважды');
+      } else if (item.match(/#/ig).length > 1) {
+        target.setCustomValidity('хэш-теги должны разделяться пробелами');
+      } else {
+        target.setCustomValidity('');
+      }
+      cloneArrTargets.push(item);
+    });
+
+    if (arrTargets.length > 5) {
+      target.setCustomValidity('нельзя указать больше пяти хэш-тегов');
+    }
+  });
+
+  document.querySelector('.text__description').addEventListener('invalid', function (evt) {
+    var target = evt.target;
+    if (document.querySelector('.text__description').validity.tooLong) {
+      target.setCustomValidity('длина комментария не может составлять больше 140 символов');
+    }
+  });
+})();
+
+(function () {
+  window.scaleValue = document.querySelector('.scale__value');
+
+  window.filters = {
+    none: function () {
+      return 'none';
+    },
+    chrome: function () {
+      return 'grayscale(' + ((window.scaleValue.value * 1) / 100) + ')';
+    },
+    sepia: function () {
+      return 'sepia(' + ((window.scaleValue.value * 1) / 100) + ')';
+    },
+    marvin: function () {
+      return 'invert(' + ((window.scaleValue.value * 100) / 100) + '%)';
+    },
+    phobos: function () {
+      return 'blur(' + ((window.scaleValue.value * 5) / 100) + 'px)';
+    },
+    heat: function () {
+      var min = (((window.scaleValue.value) * 3) / 100);
+      if (min <= 1) {
+        min = 1;
+      }
+      return 'brightness(' + min + ')';
+    },
+  };
+})();
+
+(function () {
+  var scaleLine = document.querySelector('.img-upload__scale');
+  var scalePin = scaleLine.querySelector('.scale__pin');
+  var coordsScaleLine = scaleLine.getBoundingClientRect();
+  var scaleLevel = document.querySelector('.scale__level');
+
+  var result = function (selector) {
+    document.querySelector(selector).value = changeValueScale.inputValue + '%';
+    document.querySelector('.img-upload__preview img').style.transform = 'scale(' + changeValueScale.scaleImg() + ')';
+  };
+
+  var changeValueScale = {
+    step: 25,
+    minControl: 25,
+    maxControl: 100,
+    inputValue: 100,
+    scaleImg: function () {
+      return changeValueScale.inputValue / 100;
+    },
+    increase: function (control, step, selector) {
+      changeValueScale.inputValue -= step;
+      if (changeValueScale.inputValue <= control) {
+        changeValueScale.inputValue = control;
+      }
+      result(selector);
+    },
+    reduction: function (control, step, selector) {
+      changeValueScale.inputValue += step;
+      if (changeValueScale.inputValue >= control) {
+        changeValueScale.inputValue = control;
+      }
+      result(selector);
+    }
+  };
+
+  var imgUploadResizeClickHandler = function (evt) {
+    evt.preventDefault();
+
+    var target = evt.target;
+
+    if (target.tagName !== 'BUTTON') {
+      return;
+    }
+
+    if (target.classList.contains('resize__control--minus')) {
+      changeValueScale.increase(changeValueScale.minControl, changeValueScale.step, 'input[name=scale]');
+    } else {
+      changeValueScale.reduction(changeValueScale.maxControl, changeValueScale.step, 'input[name=scale]');
+    }
+
+  };
+
+  var changeScale = function (change) {
+    scalePin.style.left = change + 'px';
+    scaleLevel.style.width = change + 'px';
+  };
+
+  var calcValue = function (scaleValue, maxWidth) {
+    return Math.round(scaleValue * 100 / maxWidth);
+  };
+
+  var setValueFilter = function (cls) {
+    if (document.querySelector('.img-upload__preview img').classList.contains('effects__preview--' + cls) &&
+      document.querySelector('.img-upload__preview img').className) {
+      document.querySelector('.img-upload__preview img').style.filter = window.filters[cls]();
+    }
+  };
+
+  document.querySelector('.img-upload__resize').addEventListener('click', imgUploadResizeClickHandler);
+
+  scalePin.addEventListener('mousedown', function (evt) {
+    evt.preventDefault();
+
+    var SCALE_START_COORD = coordsScaleLine.left;
+    var SCALE_WIDTH = scaleLine.offsetWidth - 40;
+
+    var startCoords = {
+      x: evt.clientX
+    };
+
+    scaleLevel.style.width = startCoords.x;
+
+    var mouseMoveHandler = function (moveEvt) {
+      moveEvt.preventDefault();
+
+      var shift = {
+        x: startCoords.x - moveEvt.clientX
+      };
+
+      startCoords = {
+        x: moveEvt.clientX
+      };
+
+      var coordsChange = scalePin.offsetLeft - shift.x;
+      window.scaleValue.value = calcValue(coordsChange, SCALE_WIDTH);
+
+      if (coordsChange <= SCALE_START_COORD) {
+        changeScale(SCALE_START_COORD);
+      } else if (coordsChange >= SCALE_WIDTH) {
+        changeScale(SCALE_WIDTH);
+      } else {
+        changeScale(coordsChange);
+      }
+
+      setValueFilter(document.querySelector('input:checked').value);
+
+    };
+
+    var mouseUpHandler = function (upEvt) {
+      upEvt.preventDefault();
+
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+  });
+})();
