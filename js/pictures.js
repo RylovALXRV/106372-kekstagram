@@ -108,8 +108,111 @@ var renderBigPicture = function (bigPicture) {
 var pictures = Array.apply(null, {length: 25}).map(Function.call, createPicture);
 
 renderPictures(pictures);
-renderBigPicture(pictures[0]);
 
-document.querySelector('.big-picture').classList.remove('hidden');
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.social__loadmore').classList.add('visually-hidden');
+
+// ------------------------- Задание №15 ----------------------------------
+
+var bigPicture = document.querySelector('.big-picture');
+var bigPictureCancel = bigPicture.querySelector('.big-picture__cancel');
+var imgUpload = document.querySelector('.img-upload');
+var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
+var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
+
+var ESC_CODE = 27;
+var ENTER_CODE = 13;
+
+var resetPropertiesUploadImg = function () {
+  document.querySelector('.img-upload__form .img-upload__input').value = '';
+  document.querySelector('.resize__control--value').value = '100%';
+};
+
+
+var closeModal = function (node) {
+  node.classList.add('hidden');
+  // про добавление этого класса пишется в задании...
+  document.body.classList.remove('modal-open');
+};
+
+var openWindowImgUpload = function (node) {
+  node.classList.remove('hidden');
+  document.addEventListener('keydown', function (evt) {
+    if (evt.keyCode === ESC_CODE &&
+      !document.activeElement.classList.contains('text__hashtags') &&
+      !document.activeElement.classList.contains('text__description')) {
+      resetPropertiesUploadImg();
+      closeModal(imgUploadOverlay);
+    }
+  });
+};
+
+var closeBigPicture = function (node) {
+  node.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', function () {
+    closeModal(bigPicture);
+  });
+};
+
+var renderPictureByIndex = function (evt) {
+  var target = evt.target;
+  if (target.dataset.id) {
+    renderBigPicture(pictures[target.dataset.id]);
+  }
+  bigPicture.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+};
+
+var setClassName = function (node, cls) {
+  if (!node.classList.contains(cls)) {
+    node.className = '';
+  }
+  node.classList.add('effects__preview--' + cls);
+};
+
+var setDataId = function (arr) {
+  arr.forEach(function (item, i) {
+    item.dataset.id = i;
+  });
+};
+
+imgUpload.querySelector('.img-upload__input').addEventListener('change', function () {
+  openWindowImgUpload(imgUploadOverlay);
+});
+
+imgUploadCancel.addEventListener('click', function () {
+  closeModal(imgUploadOverlay);
+  resetPropertiesUploadImg();
+});
+
+imgUploadCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_CODE) {
+    closeModal(imgUploadOverlay);
+    resetPropertiesUploadImg();
+  }
+});
+
+bigPictureCancel.addEventListener('click', function () {
+  closeBigPicture(bigPicture);
+});
+
+imgUploadOverlay.addEventListener('click', function (evt) {
+  var target = evt.target;
+  if (target.tagName !== 'INPUT') {
+    return;
+  }
+  setClassName(document.querySelector('.img-upload__preview img'), target.value);
+});
+
+document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
+  setDataId(document.querySelectorAll('.pictures .picture__img'));
+  item.addEventListener('click', function (evt) {
+    renderPictureByIndex(evt);
+    document.addEventListener('keydown', function (keydownEvt) {
+      if (keydownEvt.keyCode === ESC_CODE) {
+        closeModal(bigPicture);
+      }
+    });
+  });
+});
