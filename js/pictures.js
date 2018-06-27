@@ -142,6 +142,7 @@ var closeModal = function (node) {
 
 var openWindowImgUpload = function (node) {
   node.classList.remove('hidden');
+  document.body.classList.add('modal-open');
   document.addEventListener('keydown', function (evt) {
     if (evt.keyCode === ESC_CODE &&
       !document.activeElement.classList.contains('text__hashtags') &&
@@ -172,6 +173,7 @@ var renderPictureByIndex = function (evt) {
 var setClassName = function (node, cls) {
   if (!node.classList.contains(cls)) {
     node.className = '';
+    resetPropertiesUploadImg();
   }
   node.classList.add('effects__preview--' + cls);
 };
@@ -208,7 +210,6 @@ document.querySelector('.effects__list').addEventListener('click', function (evt
   if (target.tagName !== 'INPUT') {
     return;
   }
-  resetPropertiesUploadImg();
   setClassName(document.querySelector('.img-upload__preview img'), target.value);
   if (target.value === 'none') {
     document.querySelector('.img-upload__scale').classList.add('hidden');
@@ -273,39 +274,50 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
 (function () {
   window.scaleValue = document.querySelector('.scale__value');
 
+  var MaxValue = {
+    chromeFilter: 1,
+    sepiaFilter: 1,
+    marvinFilter: 100,
+    phobosFilter: 5,
+    heatFilter: 3,
+    percent: 100
+  };
+
   window.filters = {
     none: function () {
       return 'none';
     },
     chrome: function () {
-      return 'grayscale(' + ((window.scaleValue.value * 1) / 100) + ')';
+      return 'grayscale(' + ((window.scaleValue.value * MaxValue.chromeFilter) / MaxValue.percent) + ')';
     },
     sepia: function () {
-      return 'sepia(' + ((window.scaleValue.value * 1) / 100) + ')';
+      return 'sepia(' + ((window.scaleValue.value * MaxValue.sepiaFilter) / MaxValue.percent) + ')';
     },
     marvin: function () {
-      return 'invert(' + ((window.scaleValue.value * 100) / 100) + '%)';
+      return 'invert(' + ((window.scaleValue.value * MaxValue.marvinFilter) / MaxValue.percent) + '%)';
     },
     phobos: function () {
-      return 'blur(' + ((window.scaleValue.value * 5) / 100) + 'px)';
+      return 'blur(' + ((window.scaleValue.value * MaxValue.phobosFilter) / MaxValue.percent) + 'px)';
     },
     heat: function () {
-      var min = (((window.scaleValue.value) * 3) / 100);
-      if (min <= 1) {
-        min = 1;
+      var minValue = (((window.scaleValue.value) * MaxValue.heatFilter) / MaxValue.percent);
+      if (minValue <= 1) {
+        minValue = 1;
       }
-      return 'brightness(' + min + ')';
+      return 'brightness(' + minValue + ')';
     },
   };
 })();
 
 (function () {
-  var scaleLine = document.querySelector('.img-upload__scale');
-  var scalePin = scaleLine.querySelector('.scale__pin');
-  var coordsScaleLine = scaleLine.getBoundingClientRect();
+
+  var scaleLine = document.querySelector('.scale__line');
+  var scaleStyle = getComputedStyle(scaleLine);
+  var scaleLin = document.querySelector('.img-upload__scale');
+  var scalePin = scaleLin.querySelector('.scale__pin');
   var scaleLevel = document.querySelector('.scale__level');
 
-  var result = function (selector) {
+  var setInputValueAndScale = function (selector) {
     document.querySelector(selector).value = changeValueScale.inputValue + '%';
     document.querySelector('.img-upload__preview img').style.transform = 'scale(' + changeValueScale.scaleImg() + ')';
   };
@@ -314,23 +326,24 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
     step: 25,
     minControl: 25,
     maxControl: 100,
-    inputValue: 100,
+    percent: 100,
+    inputValue: parseFloat(document.querySelector('.resize__control--value').value),
     scaleImg: function () {
-      return changeValueScale.inputValue / 100;
+      return changeValueScale.inputValue / changeValueScale.percent;
     },
     increase: function (control, step, selector) {
       changeValueScale.inputValue -= step;
       if (changeValueScale.inputValue <= control) {
         changeValueScale.inputValue = control;
       }
-      result(selector);
+      setInputValueAndScale(selector);
     },
     reduction: function (control, step, selector) {
       changeValueScale.inputValue += step;
       if (changeValueScale.inputValue >= control) {
         changeValueScale.inputValue = control;
       }
-      result(selector);
+      setInputValueAndScale(selector);
     }
   };
 
@@ -372,8 +385,10 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
   scalePin.addEventListener('mousedown', function (evt) {
     evt.preventDefault();
 
-    var SCALE_START_COORD = coordsScaleLine.left;
-    var SCALE_WIDTH = scaleLine.offsetWidth - 40;
+    var Scale = {
+      startCoord: 0,
+      width: parseFloat(scaleStyle.width)
+    };
 
     var startCoords = {
       x: evt.clientX
@@ -393,12 +408,13 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
       };
 
       var coordsChange = scalePin.offsetLeft - shift.x;
-      window.scaleValue.value = calcValue(coordsChange, SCALE_WIDTH);
 
-      if (coordsChange <= SCALE_START_COORD) {
-        changeScale(SCALE_START_COORD);
-      } else if (coordsChange >= SCALE_WIDTH) {
-        changeScale(SCALE_WIDTH);
+      window.scaleValue.value = calcValue(coordsChange, Scale.width);
+
+      if (coordsChange <= Scale.startCoord) {
+        changeScale(Scale.startCoord);
+      } else if (coordsChange >= Scale.width) {
+        changeScale(Scale.width);
       } else {
         changeScale(coordsChange);
       }
