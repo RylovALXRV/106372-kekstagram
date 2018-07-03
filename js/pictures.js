@@ -355,6 +355,17 @@ var setValueFilter = function (filter) {
   }
 };
 
+var getCoordPin = function (coord, min, max) {
+  if (coord <= min) {
+    changeScale(min);
+    return;
+  } else if (coord >= max) {
+    changeScale(max);
+    return;
+  }
+  changeScale(coord);
+};
+
 document.querySelector('.text__hashtags').addEventListener('input', function (evt) {
   var target = evt.target;
   var hashtags = target.value.split(' ');
@@ -391,9 +402,9 @@ document.querySelector('.img-upload__resize').addEventListener('click', imgUploa
 scalePin.addEventListener('mousedown', function (evt) {
   evt.preventDefault();
 
-  var Scale = {
-    startCoord: 0,
-    width: parseFloat(scaleStyle.width)
+  var ScaleLineCoord = {
+    START: 0,
+    END: parseFloat(scaleStyle.width)
   };
 
   var startCoords = {
@@ -401,6 +412,13 @@ scalePin.addEventListener('mousedown', function (evt) {
   };
 
   scaleLevel.style.width = startCoords.x;
+
+  /*
+  При нажатии кнопки мыши получаю координату PIN'а, в дальнейшем изменяю ее и использую
+  эту координуту при отжатии кнопки мыши, т.к. в задании говориться об отслеживании
+  координаты без движения мыши...
+  * */
+  var coordScalePin = scalePin.offsetLeft;
 
   var mouseMoveHandler = function (moveEvt) {
     moveEvt.preventDefault();
@@ -413,24 +431,17 @@ scalePin.addEventListener('mousedown', function (evt) {
       x: moveEvt.clientX
     };
 
-    var coordsChange = scalePin.offsetLeft - shift.x;
+    coordScalePin = scalePin.offsetLeft - shift.x;
+    scaleValue.value = calcValue(coordScalePin, ScaleLineCoord.END);
 
-    scaleValue.value = calcValue(coordsChange, Scale.width);
-
-    if (coordsChange <= Scale.startCoord) {
-      changeScale(Scale.startCoord);
-    } else if (coordsChange >= Scale.width) {
-      changeScale(Scale.width);
-    } else {
-      changeScale(coordsChange);
-    }
-
+    getCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
     setValueFilter(document.querySelector('input:checked').value);
-
   };
 
   var mouseUpHandler = function (upEvt) {
     upEvt.preventDefault();
+
+    getCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
 
     document.removeEventListener('mousemove', mouseMoveHandler);
     document.removeEventListener('mouseup', mouseUpHandler);
