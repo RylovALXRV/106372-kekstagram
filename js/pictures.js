@@ -183,11 +183,11 @@ var renderPictureByIndex = function (evt) {
   document.body.classList.add('modal-open');
 };
 
-var setEffect = function (node, cls) {
-  if (!node.classList.contains('effects__preview--' + cls)) {
+var setEffect = function (node, effect) {
+  if (!node.classList.contains('effects__preview--' + effect)) {
     node.className = '';
     reset.effects();
-    node.classList.add('effects__preview--' + cls);
+    node.classList.add('effects__preview--' + effect);
   }
 };
 
@@ -244,30 +244,30 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
 
 // ------------------------ Задание №16 ------------------------------------
 
-var scaleLine = document.querySelector('.scale__line');
-var scaleStyle = getComputedStyle(scaleLine);
-var scaleLin = document.querySelector('.img-upload__scale');
-var scalePin = scaleLin.querySelector('.scale__pin');
+var scaleStyle = getComputedStyle(document.querySelector('.scale__line'));
+var scalePin = document.querySelector('.img-upload__scale .scale__pin');
 var scaleLevel = document.querySelector('.scale__level');
 var scaleValue = document.querySelector('.scale__value');
 
-var MIN_VALUE_BRIGHTNESS = 1;
+var MIN_VALUE_FILTER_BRIGHTNESS = 1;
 
-var valueScale = {
-  step: 25,
-  minControl: 25,
-  maxControl: 100,
-  percent: 100
+var Value = {
+  MAX_ITEM_LENGTH: 20,
+  MAX_PERCENT: 100
 };
 
-var MaxValue = {
-  chromeFilter: 1,
-  sepiaFilter: 1,
-  marvinFilter: 100,
-  phobosFilter: 5,
-  heatFilter: 3,
-  percent: 100,
-  itemLength: 20
+var ScaleValue = {
+  STEP: 25,
+  MIN_CONTROL: 25,
+  MAX_CONTROL: 100
+};
+
+var MaxValueFilter = {
+  CHROME: 1,
+  SEPIA: 1,
+  MARVIN: 100,
+  PHOBOS: 5,
+  HEAT: 3
 };
 
 var filters = {
@@ -275,20 +275,20 @@ var filters = {
     return 'none';
   },
   chrome: function () {
-    return 'grayscale(' + ((scaleValue.value * MaxValue.chromeFilter) / MaxValue.percent) + ')';
+    return 'grayscale(' + ((scaleValue.value * MaxValueFilter.CHROME) / Value.MAX_PERCENT) + ')';
   },
   sepia: function () {
-    return 'sepia(' + ((scaleValue.value * MaxValue.sepiaFilter) / MaxValue.percent) + ')';
+    return 'sepia(' + ((scaleValue.value * MaxValueFilter.SEPIA) / Value.MAX_PERCENT) + ')';
   },
   marvin: function () {
-    return 'invert(' + ((scaleValue.value * MaxValue.marvinFilter) / MaxValue.percent) + '%)';
+    return 'invert(' + ((scaleValue.value * MaxValueFilter.MARVIN) / Value.MAX_PERCENT) + '%)';
   },
   phobos: function () {
-    return 'blur(' + ((scaleValue.value * MaxValue.phobosFilter) / MaxValue.percent) + 'px)';
+    return 'blur(' + ((scaleValue.value * MaxValueFilter.PHOBOS) / Value.MAX_PERCENT) + 'px)';
   },
   heat: function () {
-    var brightnessValue = (((scaleValue.value) * MaxValue.heatFilter) / MaxValue.percent);
-    if (brightnessValue <= MIN_VALUE_BRIGHTNESS) {
+    var brightnessValue = (((scaleValue.value) * MaxValueFilter.HEAT) / Value.MAX_PERCENT);
+    if (brightnessValue <= MIN_VALUE_FILTER_BRIGHTNESS) {
       brightnessValue = 1;
     }
     return 'brightness(' + brightnessValue + ')';
@@ -301,7 +301,7 @@ var getInputValue = function () {
 
 var setValueFields = function (selector, newValue) {
   document.querySelector(selector).value = newValue + '%';
-  document.querySelector('.img-upload__preview img').style.transform = 'scale(' + (getInputValue() / valueScale.percent) + ')';
+  document.querySelector('.img-upload__preview img').style.transform = 'scale(' + (getInputValue() / Value.MAX_PERCENT) + ')';
 };
 
 var increaseScaleImg = function (control, step) {
@@ -332,9 +332,9 @@ var imgUploadResizeClickHandler = function (evt) {
   }
 
   if (target.classList.contains('resize__control--minus')) {
-    reductionScaleImg(valueScale.minControl, valueScale.step);
+    reductionScaleImg(ScaleValue.MIN_CONTROL, ScaleValue.STEP);
   } else {
-    increaseScaleImg(valueScale.maxControl, valueScale.step);
+    increaseScaleImg(ScaleValue.MAX_CONTROL, ScaleValue.STEP);
   }
 
 };
@@ -348,10 +348,10 @@ var calcValue = function (coord, maxWidth) {
   return Math.round(coord * 100 / maxWidth);
 };
 
-var setValueFilter = function (cls) {
-  if (document.querySelector('.img-upload__preview img').classList.contains('effects__preview--' + cls) &&
+var setValueFilter = function (filter) {
+  if (document.querySelector('.img-upload__preview img').classList.contains('effects__preview--' + filter) &&
     document.querySelector('.img-upload__preview img').className) {
-    document.querySelector('.img-upload__preview img').style.filter = filters[cls]();
+    document.querySelector('.img-upload__preview img').style.filter = filters[filter]();
   }
 };
 
@@ -361,7 +361,7 @@ document.querySelector('.text__hashtags').addEventListener('input', function (ev
 
   for (var i = 0; i < hashtags.length; i++) {
     var hashtag = hashtags[i].toLowerCase();
-    if (hashtag.length > MaxValue.itemLength) {
+    if (hashtag.length > Value.MAX_ITEM_LENGTH) {
       target.setCustomValidity('максимальная длина одного хэш-тега 20 символов, включая решётку.');
     } else if (hashtag[0] !== '#') {
       target.setCustomValidity('первым символом хеш-тега должна быть решетка');
