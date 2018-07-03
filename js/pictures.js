@@ -123,32 +123,44 @@ var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__o
 var ESC_CODE = 27;
 var ENTER_CODE = 13;
 
-var resetPropertiesUploadImg = function () {
-  document.querySelector('.img-upload__form .img-upload__input').value = '';
-  document.querySelector('.resize__control--value').value = '100%';
-  document.querySelector('.scale__pin').style.left = '';
-  document.querySelector('.scale__level').style.width = '';
-  document.querySelector('.img-upload__preview img').className = '';
-  document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
-  document.querySelector('.img-upload__preview img').style.filter = '';
+var reset = {
+  effects: function () {
+    document.querySelector('.img-upload__preview img').style.filter = '';
+    document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
+    document.querySelector('.resize__control--value').value = '100%';
+    document.querySelector('.scale__pin').style.left = '100%';
+    document.querySelector('.scale__level').style.width = '100%';
+  },
+  propertiesUploadImg: function () {
+    document.querySelector('.img-upload__form .img-upload__input').value = '';
+    document.querySelector('.resize__control--value').value = '100%';
+    document.querySelector('.scale__pin').style.left = '';
+    document.querySelector('.scale__level').style.width = '';
+    document.querySelector('.img-upload__preview img').className = '';
+    document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
+    document.querySelector('.img-upload__preview img').style.filter = '';
+  },
+  values: function () {
+    document.querySelector('.resize__control--value').value = '100%';
+    document.querySelector('.scale__pin').style.left = '100%';
+    document.querySelector('.scale__level').style.width = '100%';
+  }
 };
-
 
 var closeModal = function (node) {
   node.classList.add('hidden');
-  // про добавление этого класса пишется в задании...
   document.body.classList.remove('modal-open');
 };
 
 var openWindowImgUpload = function (node) {
   node.classList.remove('hidden');
   document.body.classList.add('modal-open');
-  document.querySelector('.resize__control--value').value = '100%';
+  reset.values();
   document.addEventListener('keydown', function (evt) {
     if (evt.keyCode === ESC_CODE &&
       !document.activeElement.classList.contains('text__hashtags') &&
       !document.activeElement.classList.contains('text__description')) {
-      resetPropertiesUploadImg();
+      reset.propertiesUploadImg();
       closeModal(imgUploadOverlay);
     }
   });
@@ -172,11 +184,11 @@ var renderPictureByIndex = function (evt) {
 };
 
 var setEffect = function (node, cls) {
-  if (!node.classList.contains(cls)) {
+  if (!node.classList.contains('effects__preview--' + cls)) {
     node.className = '';
-    resetPropertiesUploadImg();
+    reset.effects();
+    node.classList.add('effects__preview--' + cls);
   }
-  node.classList.add('effects__preview--' + cls);
 };
 
 var setDataId = function (arr) {
@@ -186,19 +198,18 @@ var setDataId = function (arr) {
 };
 
 imgUpload.querySelector('.img-upload__input').addEventListener('change', function () {
-  // document.querySelector('.resize__control--value').value = '100%';
   openWindowImgUpload(imgUploadOverlay);
 });
 
 imgUploadCancel.addEventListener('click', function () {
   closeModal(imgUploadOverlay);
-  resetPropertiesUploadImg();
+  reset.propertiesUploadImg();
 });
 
 imgUploadCancel.addEventListener('keydown', function (evt) {
   if (evt.keyCode === ENTER_CODE) {
     closeModal(imgUploadOverlay);
-    resetPropertiesUploadImg();
+    reset.propertiesUploadImg();
   }
 });
 
@@ -211,7 +222,7 @@ document.querySelector('.effects__list').addEventListener('click', function (evt
   if (target.tagName !== 'INPUT') {
     return;
   }
-  setEffect(document.querySelector('.img-upload__preview img'), target.value);
+  setEffect(document.querySelector('.img-upload__preview img'), target.value, evt);
   if (target.value === 'none') {
     document.querySelector('.img-upload__scale').classList.add('hidden');
   } else {
