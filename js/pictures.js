@@ -355,7 +355,7 @@ var setValueFilter = function (filter) {
   }
 };
 
-var getCoordPin = function (coord, min, max) {
+var setCoordPin = function (coord, min, max) {
   if (coord <= min) {
     changeScale(min);
     return;
@@ -413,13 +413,6 @@ scalePin.addEventListener('mousedown', function (evt) {
 
   scaleLevel.style.width = startCoords.x;
 
-  /*
-  При нажатии кнопки мыши получаю координату PIN'а, в дальнейшем изменяю ее и использую
-  эту координуту при отжатии кнопки мыши, т.к. в задании говориться об отслеживании
-  координаты без движения мыши...
-  * */
-  var coordScalePin = scalePin.offsetLeft;
-
   var mouseMoveHandler = function (moveEvt) {
     moveEvt.preventDefault();
 
@@ -431,17 +424,16 @@ scalePin.addEventListener('mousedown', function (evt) {
       x: moveEvt.clientX
     };
 
-    coordScalePin = scalePin.offsetLeft - shift.x;
+    var coordScalePin = scalePin.offsetLeft - shift.x;
     scaleValue.value = calcValue(coordScalePin, ScaleLineCoord.END);
 
-    getCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
+    setCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
     setValueFilter(document.querySelector('input:checked').value);
   };
 
   var mouseUpHandler = function (upEvt) {
     upEvt.preventDefault();
-
-    getCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
+    setCoordPin(scalePin.offsetLeft, ScaleLineCoord.START, ScaleLineCoord.END);
 
     document.removeEventListener('mousemove', mouseMoveHandler);
     document.removeEventListener('mouseup', mouseUpHandler);
