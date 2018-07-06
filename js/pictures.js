@@ -118,32 +118,40 @@ var bigPicture = document.querySelector('.big-picture');
 var bigPictureCancel = bigPicture.querySelector('.big-picture__cancel');
 var imgUpload = document.querySelector('.img-upload');
 var imgUploadCancel = imgUpload.querySelector('.img-upload__cancel');
+var imgUploadNew = document.querySelector('.img-upload__preview img');
 var imgUploadOverlay = imgUpload.querySelector('.img-upload__form .img-upload__overlay');
+var resizeControl = document.querySelector('.resize__control--value');
+var scaleLevel = document.querySelector('.scale__level');
+var scaleLine = document.querySelector('.scale__line');
+var scalePin = document.querySelector('.img-upload__scale .scale__pin');
+var scaleValue = document.querySelector('.scale__value');
 
 var ESC_CODE = 27;
 var ENTER_CODE = 13;
 
 var reset = {
   effects: function () {
-    document.querySelector('.img-upload__preview img').style.filter = '';
-    document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
-    document.querySelector('.resize__control--value').value = '100%';
-    document.querySelector('.scale__pin').style.left = '100%';
-    document.querySelector('.scale__level').style.width = '100%';
+    imgUploadNew.style.filter = '';
+    imgUploadNew.style.transform = 'scale(1)';
+    resizeControl.value = '100%';
+    scaleLevel.style.width = '100%';
+    scalePin.style.left = '100%';
   },
   propertiesUploadImg: function () {
     document.querySelector('.img-upload__form .img-upload__input').value = '';
-    document.querySelector('.resize__control--value').value = '100%';
-    document.querySelector('.scale__pin').style.left = '';
-    document.querySelector('.scale__level').style.width = '';
-    document.querySelector('.img-upload__preview img').className = '';
-    document.querySelector('.img-upload__preview img').style.transform = 'scale(1)';
-    document.querySelector('.img-upload__preview img').style.filter = '';
+    imgUploadNew.className = '';
+    imgUploadNew.style.filter = '';
+    imgUploadNew.style.transform = 'scale(1)';
+    resizeControl.value = '100%';
+    scaleLevel.style.width = '';
+    scalePin.style.left = '';
+    scalePin.style.zIndex = '';
   },
   values: function () {
-    document.querySelector('.resize__control--value').value = '100%';
-    document.querySelector('.scale__pin').style.left = '100%';
-    document.querySelector('.scale__level').style.width = '100%';
+    resizeControl.value = '100%';
+    scaleLevel.style.width = '100%';
+    scalePin.style.left = '100%';
+    scalePin.style.zIndex = 1000;
   }
 };
 
@@ -244,11 +252,6 @@ document.querySelectorAll('.pictures .picture__img').forEach(function (item) {
 
 // ------------------------ Задание №16 ------------------------------------
 
-var scaleStyle = getComputedStyle(document.querySelector('.scale__line'));
-var scalePin = document.querySelector('.img-upload__scale .scale__pin');
-var scaleLevel = document.querySelector('.scale__level');
-var scaleValue = document.querySelector('.scale__value');
-
 var MIN_VALUE_FILTER_BRIGHTNESS = 1;
 
 var Value = {
@@ -344,8 +347,16 @@ var changeScale = function (coord) {
   scaleLevel.style.width = coord + 'px';
 };
 
-var calcValue = function (coord, maxWidth) {
-  return Math.round(coord * 100 / maxWidth);
+var getCoordElem = function (elem) {
+  var box = getComputedStyle(elem);
+  return {
+    LEFT: parseFloat(box.x),
+    RIGHT: parseFloat(box.width)
+  };
+};
+
+var calcValue = function (coord) {
+  return Math.round(coord * 100 / getCoordElem(scaleLine).RIGHT);
 };
 
 var setValueFilter = function (filter) {
@@ -355,21 +366,19 @@ var setValueFilter = function (filter) {
   }
 };
 
-var setCoordPin = function (coord) {
-  var ScaleLineCoord = {
-    START: 0,
-    END: parseFloat(scaleStyle.width)
-  };
 
-  if (coord <= ScaleLineCoord.START) {
-    changeScale(ScaleLineCoord.START);
+var setCoordPin = function (coord) {
+  var scaleLineStyle = getCoordElem(scaleLine);
+  if (coord <= scaleLineStyle.LEFT) {
+    changeScale(scaleLineStyle.LEFT);
     return;
-  } else if (coord >= ScaleLineCoord.END) {
-    changeScale(ScaleLineCoord.END);
+  } else if (coord >= scaleLineStyle.RIGHT) {
+    changeScale(scaleLineStyle.RIGHT);
     return;
   }
   changeScale(coord);
 };
+
 
 document.querySelector('.text__hashtags').addEventListener('input', function (evt) {
   var target = evt.target;
@@ -425,7 +434,7 @@ scalePin.addEventListener('mousedown', function (evt) {
     };
 
     var coordScalePin = scalePin.offsetLeft - shift.x;
-    scaleValue.value = calcValue(coordScalePin, scalePin.offsetLeft);
+    scaleValue.value = calcValue(coordScalePin);
     setCoordPin(coordScalePin);
     setValueFilter(document.querySelector('input:checked').value);
   };
