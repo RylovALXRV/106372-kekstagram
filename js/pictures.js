@@ -355,12 +355,17 @@ var setValueFilter = function (filter) {
   }
 };
 
-var setCoordPin = function (coord, min, max) {
-  if (coord <= min) {
-    changeScale(min);
+var setCoordPin = function (coord) {
+  var ScaleLineCoord = {
+    START: 0,
+    END: parseFloat(scaleStyle.width)
+  };
+
+  if (coord <= ScaleLineCoord.START) {
+    changeScale(ScaleLineCoord.START);
     return;
-  } else if (coord >= max) {
-    changeScale(max);
+  } else if (coord >= ScaleLineCoord.END) {
+    changeScale(ScaleLineCoord.END);
     return;
   }
   changeScale(coord);
@@ -402,11 +407,6 @@ document.querySelector('.img-upload__resize').addEventListener('click', imgUploa
 scalePin.addEventListener('mousedown', function (evt) {
   evt.preventDefault();
 
-  var ScaleLineCoord = {
-    START: 0,
-    END: parseFloat(scaleStyle.width)
-  };
-
   var startCoords = {
     x: evt.clientX
   };
@@ -425,15 +425,14 @@ scalePin.addEventListener('mousedown', function (evt) {
     };
 
     var coordScalePin = scalePin.offsetLeft - shift.x;
-    scaleValue.value = calcValue(coordScalePin, ScaleLineCoord.END);
-
-    setCoordPin(coordScalePin, ScaleLineCoord.START, ScaleLineCoord.END);
+    scaleValue.value = calcValue(coordScalePin, scalePin.offsetLeft);
+    setCoordPin(coordScalePin);
     setValueFilter(document.querySelector('input:checked').value);
   };
 
   var mouseUpHandler = function (upEvt) {
     upEvt.preventDefault();
-    setCoordPin(scalePin.offsetLeft, ScaleLineCoord.START, ScaleLineCoord.END);
+    setCoordPin(scalePin.offsetLeft);
 
     document.removeEventListener('mousemove', mouseMoveHandler);
     document.removeEventListener('mouseup', mouseUpHandler);
